@@ -1,0 +1,8 @@
+---
+name: SAM System Status
+description: |-
+  Live NCAR system status (Derecho, Casper, JupyterHub, outages,
+  reservations) from the SAM status API. Sandbox demo for a future
+  Dashboard widget.
+icon: fa://heartbeat
+category: Monitoring
