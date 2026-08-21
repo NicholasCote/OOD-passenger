@@ -1,15 +1,3 @@
-"""SAM System Status — OOD sandbox Passenger app (Flask/WSGI).
-
-Routes:
-    GET /            HTML dashboard (auto-refreshes client-side)
-    GET /api/status  the assembled status payload as JSON (for live refresh)
-    GET /healthz     liveness
-
-Deployed as an OOD sandbox app: Passenger detects passenger_wsgi.py and
-serves this at /pun/dev/<app>. No auth in the app itself — it assumes the
-SAM status endpoints are on a public tier.
-"""
-
 from __future__ import annotations
 
 from flask import Flask, jsonify, render_template
@@ -19,10 +7,8 @@ from sam_client import SamStatusClient
 app = Flask(__name__)
 client = SamStatusClient()
 
-
 def _pct(v):
     return "-" if v is None else f"{v:.0f}%"
-
 
 def _system_state(s):
     """Coarse health rollup for a compute system, or None if no data."""
@@ -41,14 +27,12 @@ def _system_state(s):
         return "warn"
     return "ok"
 
-
 def _busiest_queue(s):
     queues = (s or {}).get("queues") or []
     if not queues:
         return None
     q = max(queues, key=lambda q: q.get("pending_jobs", 0) or 0)
     return q if (q.get("pending_jobs") or 0) > 0 else None
-
 
 def _assemble():
     data = client.status()
@@ -98,21 +82,17 @@ def _assemble():
         "errors": data.get("errors") or {},
     }
 
-
 @app.route("/")
 def index():
     return render_template("status.html", **_assemble())
-
 
 @app.route("/api/status")
 def api_status():
     return jsonify(_assemble())
 
-
 @app.route("/healthz")
 def healthz():
     return {"ok": True}
-
 
 if __name__ == "__main__":
     app.run(host="127.0.0.1", port=8080, debug=True)

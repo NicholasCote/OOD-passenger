@@ -91,15 +91,11 @@
 </div>
 
 <script>
-  // Live refresh without a full page reload: re-fetch JSON and swap the body.
-  // Uses the OOD-proxied relative path so it works under /pun/dev/<app>.
   const REFRESH_MS = 120000;
   async function refresh() {
     try {
       const r = await fetch("api/status", {headers: {"Accept": "application/json"}});
       if (!r.ok) return;
-      // Simplest reliable update under the PUN proxy: reload once data is known good.
-      // (Kept minimal; a full DOM diff isn't worth it for a status panel.)
       location.reload();
     } catch (e) { /* leave the last render in place */ }
   }

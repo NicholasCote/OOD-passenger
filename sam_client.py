@@ -1,19 +1,3 @@
-"""SAM status client.
-
-Fetches system status from the SAM status API (benkirk/sam-queries webapp),
-assuming a public/unauthenticated status tier. Stdlib + requests only.
-
-Configuration via environment (or app.config):
-    SAM_STATUS_BASE_URL   SAM webapp root, no trailing slash.
-                          If unset, the client serves bundled mock data.
-    SAM_STATUS_CACHE_TTL  seconds; default 60.
-    SAM_STATUS_MOCK       "1" forces bundled mock data (offline demo).
-
-Resolution order per refresh: fresh cache -> live fetch -> stale cache ->
-bundled mock. Every payload is labeled with `source` so the UI is honest
-about what it is showing.
-"""
-
 from __future__ import annotations
 
 import json
@@ -34,13 +18,11 @@ ENDPOINTS = {
     "reservations": "/api/v1/status/reservations",
 }
 
-
 class SamStatusClient:
     def __init__(self, base_url=None, cache_ttl=None, mock=None):
         self.base_url = (base_url or os.environ.get("SAM_STATUS_BASE_URL") or "").rstrip("/")
         self.cache_ttl = int(cache_ttl or os.environ.get("SAM_STATUS_CACHE_TTL") or 60)
         env_mock = os.environ.get("SAM_STATUS_MOCK") == "1"
-        # No base URL configured -> nothing to fetch, so serve mock.
         self.mock = bool(mock) or env_mock or not self.base_url
         self._cache = None          # last good payload
         self._cache_at = 0.0        # monotonic timestamp of last good fetch
@@ -64,8 +46,6 @@ class SamStatusClient:
         fallback = self._mock_payload()
         fallback["errors"] = payload["errors"]
         return fallback
-
-    # ---- internals -------------------------------------------------------
 
     def _fetch_live(self):
         payload = {"source": "live", "errors": {}}
@@ -91,7 +71,6 @@ class SamStatusClient:
         raw["errors"] = {}
         raw["fetched_at"] = _now_iso()
         return raw
-
 
 def _now_iso():
     return time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
